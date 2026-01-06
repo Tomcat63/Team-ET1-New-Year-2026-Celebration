@@ -11,7 +11,11 @@ export const appConfig = {
     "logoText": "ET1",
     "title": "The Idea Factory",
     "subtitle": "ET1 IT-Systemhaus"
-  }
+  },
+  "timelineSpeed": 1.15,
+  "memberSpeed": 1.15,
+  "fireworkFrequency": 1.5,
+  "fireworkLifetime": 0.65
 };
 
 export default appConfig;

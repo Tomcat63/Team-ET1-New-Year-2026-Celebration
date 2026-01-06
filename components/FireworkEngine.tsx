@@ -6,37 +6,59 @@ import { soundEngine } from '../services/SoundEngine';
 interface FireworkEngineProps {
   intensity?: number;
   isPaused?: boolean;
+  lifetime?: number;
 }
 
 export interface FireworkEngineHandle {
   launchAt: (x: number, y: number) => void;
 }
 
-export const FireworkEngine = forwardRef<FireworkEngineHandle, FireworkEngineProps>(({ intensity = 1, isPaused = false }, ref) => {
+export const FireworkEngine = forwardRef<FireworkEngineHandle, FireworkEngineProps>(({ intensity = 1, isPaused = false, lifetime = 1 }, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fireworksRef = useRef<Firework[]>([]);
   const particlesRef = useRef<Particle[]>([]);
 
   const colors = ['#60a5fa', '#f472b6', '#fbbf24', '#34d399', '#22d3ee', '#a78bfa', '#f87171', '#ffffff'];
 
-  const createFirework = (x?: number, targetY?: number) => {
+  const explode = (x: number, y: number, color: string) => {
+    soundEngine.playExplosion();
+    const count = 80 + Math.random() * 60;
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 4 + 1.2;
+      particlesRef.current.push({
+        x: x,
+        y: y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        color: color,
+        alpha: 1,
+        size: Math.random() * 2 + 0.5,
+        decay: (Math.random() * 0.015 + 0.005) * (1 / lifetime)
+      });
+    }
+  };
+
+  const createFirework = (x?: number, targetY?: number, instant = false) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     const spawnX = x ?? Math.random() * canvas.width;
-    const spawnY = canvas.height;
     const tY = targetY ?? (100 + Math.random() * (canvas.height * 0.5));
     const color = colors[Math.floor(Math.random() * colors.length)];
-    
-    fireworksRef.current.push({ x: spawnX, y: spawnY, targetY: tY, color, particles: [], exploded: false });
-    
-    // Abschuss-Sound abspielen
-    soundEngine.playLaunch();
+
+    if (instant) {
+      explode(spawnX, tY, color);
+    } else {
+      const spawnY = canvas.height;
+      fireworksRef.current.push({ x: spawnX, y: spawnY, targetY: tY, color, particles: [], exploded: false });
+      soundEngine.playLaunch();
+    }
   };
 
   useImperativeHandle(ref, () => ({
     launchAt: (x: number, y: number) => {
-      createFirework(x, y);
+      createFirework(x, y, true);
     }
   }));
 
@@ -58,27 +80,6 @@ export const FireworkEngine = forwardRef<FireworkEngineHandle, FireworkEnginePro
     window.addEventListener('resize', resize);
     resize();
 
-    const explode = (fw: Firework) => {
-      // Explosions-Sound über die Engine
-      soundEngine.playExplosion();
-      
-      const count = 80 + Math.random() * 60;
-      for (let i = 0; i < count; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 4 + 1.2;
-        particlesRef.current.push({
-          x: fw.x,
-          y: fw.targetY,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          color: fw.color,
-          alpha: 1,
-          size: Math.random() * 2 + 0.5,
-          decay: Math.random() * 0.015 + 0.005
-        });
-      }
-    };
-
     const animate = () => {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -97,7 +98,7 @@ export const FireworkEngine = forwardRef<FireworkEngineHandle, FireworkEnginePro
 
           if (fw.y <= fw.targetY) {
             fw.exploded = true;
-            explode(fw);
+            explode(fw.x, fw.targetY, fw.color);
             return false;
           }
           return true;
@@ -120,10 +121,10 @@ export const FireworkEngine = forwardRef<FireworkEngineHandle, FireworkEnginePro
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
-        
+
         return true;
       });
-      
+
       ctx.globalAlpha = 1;
       animationFrameId = requestAnimationFrame(animate);
     };
@@ -137,8 +138,8 @@ export const FireworkEngine = forwardRef<FireworkEngineHandle, FireworkEnginePro
   }, [intensity, isPaused]);
 
   return (
-    <canvas 
-      ref={canvasRef} 
+    <canvas
+      ref={canvasRef}
       className="absolute inset-0 z-0 bg-black"
     />
   );
