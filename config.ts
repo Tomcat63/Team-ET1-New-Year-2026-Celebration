@@ -5,7 +5,7 @@ export const appConfig = {
   "teamName": "TEAM ET1",
   "slogan": "Since 2011",
   "teamMembers": [
-    "Andy", "Trung", "Kai", "Sven", "Tobi", "Juri", "Peter", "Gabi", "Nik"
+    "Andy", "Trung", "Kay", "Sven", "Tobi", "Juri", "Peter", "Gabi", "Nik"
   ],
   "branding": {
     "logoText": "ET1",
