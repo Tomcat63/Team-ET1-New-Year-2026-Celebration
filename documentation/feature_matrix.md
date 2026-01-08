@@ -5,6 +5,7 @@ Diese Dokumentation gibt einen Überblick über die Kern-Features der App, die v
 | Feature | Technologie-Stack | Code-Stelle / Schicht / Modul | Anmerkungen |
 | :--- | :--- | :--- | :--- |
 | **Animation State Engine** | React Hooks, JS Timing | `hooks/useAnimationTimeline.ts` | Kern-Logik für den Show-Ablauf und Zeit-Berechnungen. |
+| **Hintergrund Pixel-Matrix** | React, Canvas (Pixel Data) | `components/PixelMatrix.tsx` <br> `hooks/usePixelGrid.ts` | Wandelt Text in ein Raster aus leuchtenden Punkten um. |
 | **Stage Orchestration** | React, Modular Components | `App.tsx` & `components/Stage.tsx` | Zusammenbau der Show-Bühne aus modularen Komponenten. |
 | **Canvas Feuerwerk-Engine** | HTML5 Canvas, Custom Hook | `components/FireworkEngine.tsx` <br> `hooks/useFireworkEngine.ts` | Physik und Rendering sind sauber in Hook und Component getrennt. |
 | **Echtzeit-Settings UI** | React, Tailwind CSS | `components/SettingsPanel.tsx` | Kompaktes UI-Modul für Live-Parameter-Tuning. |

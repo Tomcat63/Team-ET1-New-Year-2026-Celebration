@@ -1,5 +1,5 @@
-
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { usePixelGrid } from '../hooks/usePixelGrid';
 
 interface PixelMatrixProps {
   text: string;
@@ -7,38 +7,8 @@ interface PixelMatrixProps {
   isPaused?: boolean;
 }
 
-export const PixelMatrix: React.FC<PixelMatrixProps> = ({ text, active, isPaused = false }) => {
-  const [grid, setGrid] = useState<boolean[][]>([]);
-
-  useEffect(() => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const width = 120;
-    const height = 30;
-    canvas.width = width;
-    canvas.height = height;
-
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 22px "Courier New", monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(text, width / 2, height / 2);
-
-    const imgData = ctx.getImageData(0, 0, width, height).data;
-    const newGrid: boolean[][] = [];
-
-    for (let y = 0; y < height; y++) {
-      const row: boolean[] = [];
-      for (let x = 0; x < width; x++) {
-        const index = (y * width + x) * 4;
-        row.push(imgData[index + 3] > 128);
-      }
-      newGrid.push(row);
-    }
-    setGrid(newGrid);
-  }, [text]);
+export const PixelMatrix: React.FC<PixelMatrixProps> = ({ text, isPaused = false }) => {
+  const { grid } = usePixelGrid(text);
 
   return (
     <div className="relative flex flex-col items-center justify-center">
@@ -52,10 +22,7 @@ export const PixelMatrix: React.FC<PixelMatrixProps> = ({ text, active, isPaused
                 <div
                   key={`${x}-${y}`}
                   className={`w-[4px] h-[4px] md:w-[6px] md:h-[6px] rounded-full bg-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.8)] ${isPaused ? '' : 'animate-pulse'}`}
-                  style={{
-                    animationDelay: isPaused ? '0s' : `${(x + y) * 15}ms`,
-                    // Keine CSS-Transition hier, damit App.tsx die volle Kontrolle über die Opacity behält
-                  }}
+                  style={{ animationDelay: isPaused ? '0s' : `${(x + y) * 15}ms` }}
                 />
               );
             })}
